@@ -1,6 +1,6 @@
-import tree
+import pyCollections as c
 
-t = tree.Tree()
+t = c.AATree()
 
 t.insert('T')
 print('============')
