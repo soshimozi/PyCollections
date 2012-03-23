@@ -18,16 +18,20 @@ Using
        >>> tree.insert('X')
        >>> tree.remove('X')  
 """
+class NodeColor:
+    BLACK = 0
+    RED = 1
 
 class DuplicateKeyError(Exception):
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, key):
+        self.key = key
 
     def __str__(self):
-        return repr(self.value)
+        return repr(self.key)
 
 class TreeNode(object):
-    def __init__(self, value, left, right):
+    def __init__(self, key, value, left, right):
+        self.key = key
         self.value = value
         self.left = left
         self.right = right
@@ -37,236 +41,30 @@ class TreeNode(object):
 
 class AATreeNode(TreeNode):
     """This class represents a single node in a binary tree."""
-    def __init__(self, value, level, left, right):
-	super(AATreeNode, self).__init__(value, left, right)
+    def __init__(self, key, value, left, right, level):
+	super(AATreeNode, self).__init__(key, value, left, right)
         self.level = level
 
     def __repr__(self):
         return TreeNode.__repr__(self)
 
 class RBTreeNode(TreeNode):
-    def __init__(self, value, isred, parent, left, right):
-	super(RBTreeNode, self).__init__(value, left, right)
+    def __init__(self, key, value, left, right, parent, color):
+	super(RBTreeNode, self).__init__(key, value, left, right)
 	self.parent = parent
-        self.isred = isred
+        self.color = color
 
     def __repr__(self):
         return TreeNode.__repr__(self)
 
-
-class RBTree:
-
-    # every node is red or black
-    # root and leaf nodes are black
-    # every red node has a black parent
-    # all simple paths from any node x to a descendant
-    # leaf have the same number of black nodes = black-height(x)
-
     
-    def _binary_insert(self, z):
-        # even though at instantiation, these are set to nill - make sure they still are
-        z.left = z.right = self._nil
-        
-        y = self._root
-        x = self._root.left
-
-        while x != self._nil:
-            y = x
-            if x.value > z.value:
-                x = x.left
-            else:
-                x = x.right
-
-        z.parent = y
-
-        if y == self._root or y.key > z.key:
-            y.left = z
-        else:
-            y.right = z
-
-
-    def _is_nil(self, n):
-        return n == self._nil
-
-    def _left_rotate(self, y):
-
-        y = x.right
-        x.right = y.left
-
-        if not self._is_nil(y.left):
-            y.left.parent = x
-
-        y.parent = x.parent
-        
-        if x == x.parent.left:
-            x.parent.left = y
-        else:
-            x.parent.right = y
-
-        y.left = x
-        x.parent = y
-
-
-    def _right_rotate(self, y):
-        
-        x = y.left
-        y.left = x.right
-        
-        if not self._is_nil(x.right):
-            x.right.parent = y
-        
-        x.parent = y.parent
-        
-        if y == y.parent.left:
-            y.parent.left = x
-        else:
-            y.parent.right = x
-
-        x.right = y
-        y.parent = x
-
-    def _is_red(self, x):
-        return x.isred
-
-    def _rebalance(self, x):
-        
- 
-
-    def insert(self, value):
-        
-        x = self._make_node(value, false)
-        self._binary_insert(x)
-        
-        newNode = x
-
-        x.isred = True
-
-        while x.parent.isred:
-            
-            if x.parent = x.parent.parent.left:
-                
-                y = x.parent.parent.right
-                if y.isred:
-                    x.parent.isred = False
-                    y.isred = False
-                    x.parent.parent.isred = True
-                    x = x.parent.parent
-                else:
-                    if x == x.parent.right:
-                        x = x.parent
-                        self._left_rotate(x)
-
-                    x.parent.isred = False
-                    x.parent.parent.isred = True
-                    self._right_rotate(x.parent.parent)
-            else:
-                
-                y = x.parent.parent.left
-                if y.isred:
-                    x.parent.isred = False
-                    y.isred = False
-                    x.parent.parent.isred = True
-                    x = x.parent.parent
-                else:
-                    
-                    if x == x.parent.left:
-                        x = x.parent
-                        self._right_rotate(x)
-
-                    x.parent.isred = False
-                    x.parent.parent.isred = True
-                    self._left_rotate(x.parent.parent)
-                    
-
-                    
-        self.root.left.isred = False
-        return newNode
-
-        
-
-    """This class represents a balanced binary tree.
-       This particluar implementation uses the Red-Black tree variation."""
-    def __init__(self):
-        self._nil = RBTreeNode(None, False, None, None)
-        self._root = self._nil
-
-    def _make_node(self, value, isred):
-        return RBTreeNode(value, isred, self._nil, self._nil, self._nil)
-
-    def _grandparent(self, n):
-        if n and n.parent:
-            return n.parent.parent
-        else:
-            return None
-
-    def _uncle(self, n):
-        g = grandparent(n)
-        if not g:
-            return None
-
-        if n.parent == g.left:
-            return g.right
-        else:
-            return g.left
-
-    def _insert_case1(self, n):
-        if not n.parent:
-            n.color = COLOR_BLACK
-        else:
-            self._insert_case2(n)
-
-    def _insert_case2(self, n):
-        if n.parent.color == COLOR_BLACK:
-            return # tree is still valid
-        else:
-            self._insert_case3(n)
-
-    def _insert_case3(self, n):
-        u = self._uncle(n)
-
-        if u and u.color == COLOR_RED:
-            n.parent.color = COLOR_BLACK
-            u.color = COLOR_BLACK
-            g = self._grandparent(n)
-            g.color = COLOR_RED
-            self._insert_case1(g)
-        else:
-            self._insert_case4(n)
-
-    def _insert_case4(self, n):
-        g = self._grandparent(n)
-        
-        if n == n.parent.right and n.parent == g.left:
-            self._rotate_left(n.parent)
-            n = n.left
-        else:
-            if n == n.parent.left and n.parent = g.right:
-                self._rotate_right(n.parent)
-                n = n.right
-            
-
-        self._insert_case5(n)
-
-    def _insert_case5(self, n):
-        g = grandparent(n)
-
-        n.parent.color = COLOR_BLACK
-        g.color = COLOR_RED
-        
-        if n == n.parent.left:
-            self._rotate_right(g)
-        else:
-            self._rotate_left(g)
-        
-    
-
 class AATree:
     """This class represents a balanced binary tree.
     This particular implementation uses the AA tree variation."""
     def __init__(self):
         self.root = None
         
-        self._bottom = AATreeNode(None, 0, None, None)
+        self._bottom = AATreeNode(None, None, None, None, 0)
         
         self._bottom.left = self._bottom
         self._bottom.right = self._bottom
@@ -302,7 +100,7 @@ class AATree:
         
         return T
 
-    def _delete_node(self, value, T):
+    def _delete_node(self, key, T):
         if T != self._bottom:
 
             #last = delete = None
@@ -310,17 +108,17 @@ class AATree:
             # Step 1: Search down tree
             #         set last and delete
             self._last = T
-            if value < T.value:
-                T.left = self._delete_node(value, T.left)
+            if key < T.key:
+                T.left = self._delete_node(key, T.left)
             else:
                 self._deleted = T
-                T.right = self._delete_node(value, T.right)
+                T.right = self._delete_node(key, T.right)
 
             # Step 2: If at the bottom of the tree and
             #         item is present, we remove it
-            if T == self._last and self._deleted != self._bottom and value == self._deleted.value:
+            if T == self._last and self._deleted != self._bottom and key == self._deleted.key:
 
-                    self._deleted.value = T.value
+                    self._deleted.key = T.key
                     self._deleted = self._bottom
                    
                     T = T.right
@@ -342,7 +140,7 @@ class AATree:
                     T.right = self._split(T.right)
         return T
 
-    def _insert_node(self, value, T):
+    def _insert_node(self, key, value, T):
       
         # Do the normal binary tree insertion procedure.  Set the result of the
         # recursive call to the correct child in the case a new node was created or the
@@ -350,22 +148,174 @@ class AATree:
 
         if T == self. _bottom:
             # Create a new leaf node with value.
-            return AATreeNode(value, 1, self._bottom, self._bottom)
+            return AATreeNode(key, value, self._bottom, self._bottom, 1)
 
         else:
-            if value < T.value:
-                T.left = self._insert_node(value, T.left)
+            if key < T.key:
+                T.left = self._insert_node(key, value, T.left)
             else:
-                if value > T.value:
-                    T.right = self._insert_node(value, T.right)
+                if key > T.key:
+                    T.right = self._insert_node(key, value, T.right)
                 else:
                     raise DuplicateKeyError(value)
 
         # skew then split, returning the result
         return self. _split(self._skew(T))
           
-    def insert(self, value):
-        self.root = self._insert_node(value, self.root)
+    def insert(self, key, value):
+        self.root = self._insert_node(key, value, self.root)
 
-    def remove(self, value):
-        self.root = self._delete_node(value, self.root)
+    def remove(self, key):
+        self.root = self._delete_node(key, self.root)
+
+class RedBlackTree:
+
+    def __init__(self):
+        
+        self.nil = RBTreeNode(None, None, None, None, None, NodeColor.BLACK)
+        self.nil.left = self.nil.right = self.nil.parent = self.nil
+
+        self._root = self.nil
+
+    def _is_nil(self, node):
+        return node == self.nil
+		
+    def _left_rotate(self, x):
+
+        y = x.right
+        x.right = y.left
+
+        if y.left != self.nil:
+            y.left.parent = x
+
+        y.parent = x.parent
+        if x == x.parent.left:
+            x.parent.left = y
+        else:
+            x.parent.right = y
+
+        y.left = x
+        x.parent = y
+
+        assert(self.nil.color == NodeColor.BLACK)
+
+    def _right_rotate(self, y):
+
+        x = y.left
+        y.left = x.right
+        
+        if x.right != self.nil:
+            x.right.parent = y
+
+        x.parent = y.parent
+        if y == y.parent.left:
+            y.parent.left = x
+        else:
+            y.parent.right = x
+
+        x.right = y
+        y.parent = x
+
+        assert(self.nil.color == NodeColor.BLACK)
+
+    def _make_node(self, key, value):
+        return RBTreeNode(key, value, self.nil, self.nil, self.nil, NodeColor.RED)
+
+    def _insert(self, z):
+        
+        z.left = z.right = z.Parent = self.nil
+
+        y = self._root
+        x = self._root.left
+        
+        while not self._is_nil(x):
+            y = x
+            
+            if x.key == z.key:
+                raise DuplicateKeyError(z.key)
+            else:
+                if x.key > z.key:
+                    x = x.left
+                else:
+                    x = x.right
+
+        z.parent = y
+        if y == self._root or y.key > z.key:
+            y.left = z
+        else:
+            y.right = z
+
+    def _rebalance(self, x):
+        
+        # red black property may have been destroyed
+        # so we have to restore it
+        while x.parent.color == NodeColor.RED:
+            
+            if x.parent == x.parent.parent.left:
+                # if x's parent is a left, uncle must be a right
+                y = x.parent.parent.right
+
+                if y.color == NodeColor.RED:
+                    # case 1
+                    print("case #1")
+                    x.parent.color = NodeColor.BLACK
+                    y.color = NodeColor.BLACK
+                    x.parent.parent.color = NodeColor.RED
+                    x = x.parent.parent
+                else:
+                    # y is black
+                    
+                    # and x is right, case #2
+                    # move x up and roate it (rotates child into Parent spot)
+                    if x == x.parent.right:
+                        print("case #2")
+                        x = x.parent
+                        self._left_rotate(x)
+
+                    # case #3
+                    print("case #3")
+                    x.parent.color = NodeColor.BLACK
+                    x.parent.parent.color = NodeColor.RED
+                    self._right_rotate(x.parent.parent)
+            else:
+
+                # x's parent is a RIGHT child (symmetrical to left case)
+                
+                #if x's parent is a right, uncle must be a left
+                y = x.parent.parent.left
+                if y.color == NodeColor.RED:
+                    # case #4
+                    print("case #4")
+
+                    x.parent.color = NodeColor.BLACK
+                    y.color = NodeColor.BLACK
+                    x.parent.parent.color = NodeColor.RED
+                    x = x.parent.parent
+
+                else:
+                    
+                    # x is left, case #2
+                    # move x up and rotate it (rotates child into Parent's position)
+                    if x == x.parent.left:
+                        print("case #5")
+
+                        x = x.parent
+                        self._right_rotate(x)
+
+                    print("case #6")
+
+                    x.parent.color = NodeColor.BLACK
+                    x.parent.parent.color = NodeColor.RED
+                    self._left_rotate(x.parent.parent)
+                    
+    def insert(self, key, value):
+        newnode = self._make_node(key, value)
+
+        self._insert(newnode)
+
+        self._rebalance(newnode)
+
+        # always set root color to black
+        self._root.left.color = NodeColor.BLACK
+
+        return newnode
