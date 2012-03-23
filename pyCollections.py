@@ -31,28 +31,31 @@ class DuplicateKeyError(Exception):
 
 class TreeNode(object):
     def __init__(self, key, value, left, right):
-        self.key = key
-        self.value = value
-        self.left = left
-        self.right = right
+        self._key = key
+        self._value = value
+        self._left = left
+        self._right = right
 
     def __repr__(self):
-        return repr (self.value)
+        return repr (self._value)
+
+    def getKey(self):
+        return self._key
 
 class AATreeNode(TreeNode):
     """This class represents a single node in a binary tree."""
-    def __init__(self, key, value, left, right, level):
-	super(AATreeNode, self).__init__(key, value, left, right)
-        self.level = level
+    def __init__(self, key, value, _left, _right, _level):
+	super(AATreeNode, self).__init__(key, value, _left, _right)
+        self._level = level
 
     def __repr__(self):
         return TreeNode.__repr__(self)
 
 class RBTreeNode(TreeNode):
-    def __init__(self, key, value, left, right, parent, color):
-	super(RBTreeNode, self).__init__(key, value, left, right)
-	self.parent = parent
-        self.color = color
+    def __init__(self, key, value, _left, _right, parent, color):
+	super(RBTreeNode, self).__init__(key, value, _left, _right)
+	self._parent = parent
+        self._color = color
 
     def __repr__(self):
         return TreeNode.__repr__(self)
@@ -66,8 +69,8 @@ class AATree:
         
         self._bottom = AATreeNode(None, None, None, None, 0)
         
-        self._bottom.left = self._bottom
-        self._bottom.right = self._bottom
+        self._bottom._left = self._bottom
+        self._bottom._right = self._bottom
 
         self._deleted = self._bottom
         self._last = self._bottom
@@ -76,11 +79,11 @@ class AATree:
     def _skew(self, T):
         if T != self._bottom:
 
-            if T.left.level == T.level:
-            #swap the pointers of the horizontal left links.
-                L = T.left
-                T.left = L.right
-                L.right = T
+            if T._left._level == T._level:
+            #swap the pointers of the horizontal _left links.
+                L = T._left
+                T._left = L._right
+                L._right = T
                 return L
             else:
                 return T
@@ -90,12 +93,12 @@ class AATree:
     def _split(self, T):
         if T != self._bottom:
           
-            if T.level == T.right.right.level:
+            if T._level == T._right._right._level:
                 # We have two horizontal links.  Take the middle node, elevate it, and return it
-                R = T.right
-                T.right = R.left
-                R.left = T
-                R.level = R.level + 1
+                R = T._right
+                T._right = R._left
+                R._left = T
+                R._level = R._level + 1
                 return R
         
         return T
@@ -108,36 +111,36 @@ class AATree:
             # Step 1: Search down tree
             #         set last and delete
             self._last = T
-            if key < T.key:
-                T.left = self._delete_node(key, T.left)
+            if key < T._key:
+                T._left = self._delete_node(key, T._left)
             else:
                 self._deleted = T
-                T.right = self._delete_node(key, T.right)
+                T._right = self._delete_node(key, T._right)
 
             # Step 2: If at the bottom of the tree and
             #         item is present, we remove it
-            if T == self._last and self._deleted != self._bottom and key == self._deleted.key:
+            if T == self._last and self._deleted != self._bottom and key == self._deleted._key:
 
-                    self._deleted.key = T.key
+                    self._deleted._key = T._key
                     self._deleted = self._bottom
                    
-                    T = T.right
+                    T = T._right
                     self._last = None
 
             # Step 3: Otherwise we are nto at the bottom;
             #         rebalance
             else:
-                if T.left.level < T.level - 1 or T.right.level < T.level - 1:
+                if T._left._level < T._level - 1 or T._right._level < T._level - 1:
 
-                    T.level = T.level - 1
-                    if T.right.level > T.level:
-                        T.right.level = T.level
+                    T._level = T._level - 1
+                    if T._right._level > T._level:
+                        T._right._level = T._level
 
                     T = self._skew(T)
-                    T.right = self._skew(T.right)
-                    T.right.right = self._skew(T.right.right)
+                    T._right = self._skew(T._right)
+                    T._right._right = self._skew(T._right._right)
                     T = self._split(T)
-                    T.right = self._split(T.right)
+                    T._right = self._split(T._right)
         return T
 
     def _insert_node(self, key, value, T):
@@ -151,11 +154,11 @@ class AATree:
             return AATreeNode(key, value, self._bottom, self._bottom, 1)
 
         else:
-            if key < T.key:
-                T.left = self._insert_node(key, value, T.left)
+            if key < T._key:
+                T._left = self._insert_node(key, value, T._left)
             else:
-                if key > T.key:
-                    T.right = self._insert_node(key, value, T.right)
+                if key > T._key:
+                    T._right = self._insert_node(key, value, T._right)
                 else:
                     raise DuplicateKeyError(value)
 
@@ -172,141 +175,141 @@ class RedBlackTree:
 
     def __init__(self):
         
-        self.nil = RBTreeNode(None, None, None, None, None, NodeColor.BLACK)
-        self.nil.left = self.nil.right = self.nil.parent = self.nil
+        self._nil = RBTreeNode(None, None, None, None, None, NodeColor.BLACK)
+        self._nil._left = self._nil._right = self._nil._parent = self._nil
 
-        self._root = self.nil
+        self._root = self._nil
 
     def _is_nil(self, node):
-        return node == self.nil
+        return not node or node == self._nil
 		
     def _left_rotate(self, x):
 
-        y = x.right
-        x.right = y.left
+        y = x._right
+        x._right = y._left
 
-        if y.left != self.nil:
-            y.left.parent = x
+        if y._left != self._nil:
+            y._left._parent = x
 
-        y.parent = x.parent
-        if x == x.parent.left:
-            x.parent.left = y
+        y._parent = x._parent
+        if x == x._parent._left:
+            x._parent._left = y
         else:
-            x.parent.right = y
+            x._parent._right = y
 
-        y.left = x
-        x.parent = y
+        y._left = x
+        x._parent = y
 
-        assert(self.nil.color == NodeColor.BLACK)
+        assert(self._nil._color == NodeColor.BLACK)
 
-    def _right_rotate(self, y):
+    def __right_rotate(self, y):
 
-        x = y.left
-        y.left = x.right
+        x = y._left
+        y._left = x._right
         
-        if x.right != self.nil:
-            x.right.parent = y
+        if x._right != self._nil:
+            x._right._parent = y
 
-        x.parent = y.parent
-        if y == y.parent.left:
-            y.parent.left = x
+        x._parent = y._parent
+        if y == y._parent._left:
+            y._parent._left = x
         else:
-            y.parent.right = x
+            y._parent._right = x
 
-        x.right = y
-        y.parent = x
+        x._right = y
+        y._parent = x
 
-        assert(self.nil.color == NodeColor.BLACK)
+        assert(self._nil._color == NodeColor.BLACK)
 
     def _make_node(self, key, value):
-        return RBTreeNode(key, value, self.nil, self.nil, self.nil, NodeColor.RED)
+        return RBTreeNode(key, value, self._nil, self._nil, self._nil, NodeColor.RED)
 
     def _insert(self, z):
         
-        z.left = z.right = z.Parent = self.nil
+        z._left = z._right = z._Parent = self._nil
 
         y = self._root
-        x = self._root.left
+        x = self._root._left
         
         while not self._is_nil(x):
             y = x
             
-            if x.key == z.key:
-                raise DuplicateKeyError(z.key)
+            if x._key == z._key:
+                raise DuplicateKeyError(z._key)
             else:
-                if x.key > z.key:
-                    x = x.left
+                if x._key > z._key:
+                    x = x._left
                 else:
-                    x = x.right
+                    x = x._right
 
-        z.parent = y
-        if y == self._root or y.key > z.key:
-            y.left = z
+        z._parent = y
+        if y == self._root or y._key > z._key:
+            y._left = z
         else:
-            y.right = z
+            y._right = z
 
     def _rebalance(self, x):
         
         # red black property may have been destroyed
         # so we have to restore it
-        while x.parent.color == NodeColor.RED:
+        while x._parent._color == NodeColor.RED:
             
-            if x.parent == x.parent.parent.left:
-                # if x's parent is a left, uncle must be a right
-                y = x.parent.parent.right
+            if x._parent == x._parent._parent._left:
+                # if x's parent is a left, uncle must be a _right
+                y = x._parent._parent._right
 
-                if y.color == NodeColor.RED:
+                if y._color == NodeColor.RED:
                     # case 1
                     print("case #1")
-                    x.parent.color = NodeColor.BLACK
-                    y.color = NodeColor.BLACK
-                    x.parent.parent.color = NodeColor.RED
-                    x = x.parent.parent
+                    x._parent._color = NodeColor.BLACK
+                    y._color = NodeColor.BLACK
+                    x._parent._parent._color = NodeColor.RED
+                    x = x._parent._parent
                 else:
                     # y is black
                     
-                    # and x is right, case #2
+                    # and x is _right, case #2
                     # move x up and roate it (rotates child into Parent spot)
-                    if x == x.parent.right:
+                    if x == x._parent._right:
                         print("case #2")
-                        x = x.parent
+                        x = x._parent
                         self._left_rotate(x)
 
                     # case #3
                     print("case #3")
-                    x.parent.color = NodeColor.BLACK
-                    x.parent.parent.color = NodeColor.RED
-                    self._right_rotate(x.parent.parent)
+                    x._parent._color = NodeColor.BLACK
+                    x._parent._parent._color = NodeColor.RED
+                    self._right_rotate(x._parent._parent)
             else:
 
                 # x's parent is a RIGHT child (symmetrical to left case)
                 
                 #if x's parent is a right, uncle must be a left
-                y = x.parent.parent.left
-                if y.color == NodeColor.RED:
+                y = x._parent._parent._left
+                if y._color == NodeColor.RED:
                     # case #4
                     print("case #4")
 
-                    x.parent.color = NodeColor.BLACK
-                    y.color = NodeColor.BLACK
-                    x.parent.parent.color = NodeColor.RED
-                    x = x.parent.parent
+                    x._parent._color = NodeColor.BLACK
+                    y._color = NodeColor.BLACK
+                    x._parent._parent._color = NodeColor.RED
+                    x = x._parent._parent
 
                 else:
                     
                     # x is left, case #2
                     # move x up and rotate it (rotates child into Parent's position)
-                    if x == x.parent.left:
+                    if x == x._parent._left:
                         print("case #5")
 
-                        x = x.parent
+                        x = x._parent
                         self._right_rotate(x)
 
                     print("case #6")
 
-                    x.parent.color = NodeColor.BLACK
-                    x.parent.parent.color = NodeColor.RED
-                    self._left_rotate(x.parent.parent)
+                    x._parent._color = NodeColor.BLACK
+                    x._parent._parent._color = NodeColor.RED
+                    self._left_rotate(x._parent._parent)
                     
     def insert(self, key, value):
         newnode = self._make_node(key, value)
@@ -316,160 +319,160 @@ class RedBlackTree:
         self._rebalance(newnode)
 
         # always set root color to black
-        self._root.left.color = NodeColor.BLACK
+        self._root._left._color = NodeColor.BLACK
 
         return newnode
 
 
-    def _deleteFixUp(self, x):
-        root = self._root.left
+    def _delete_fix_up(self, x):
+        root = self._root._left
 
-        while x.color == NodeColor.BLACK and root != x:
-            if x == x.parent.left:
-                w = x.parent.right
-                if w.color == NodeColor.RED:
-                    w.color = NodeColor.BLACK
-                    x.parent.color = NodeColor.RED
-                    self._left_rotate(x.parent)
-                    w = x.parent.right
+        while x._color == NodeColor.BLACK and root != x:
+            if x == x._parent._left:
+                w = x._parent._right
+                if w._color == NodeColor.RED:
+                    w._color = NodeColor.BLACK
+                    x._parent._color = NodeColor.RED
+                    self._left_rotate(x._parent)
+                    w = x._parent._right
 
-                if w.right.color == NodeColor.BLACK and w.left.color == NodeColor.BLACK:
-                    w.color = NodeColor.RED
-                    x = x.parent
+                if w._right._color == NodeColor.BLACK and w._left._color == NodeColor.BLACK:
+                    w._color = NodeColor.RED
+                    x = x._parent
 
                 else:
                     
-                    if w.right.color == NodeColor.BLACK:
-                        w.left.color = NodeColor.BLACK
-                        w.color = NodeColor.RED
+                    if w._right._color == NodeColor.BLACK:
+                        w._left._color = NodeColor.BLACK
+                        w._color = NodeColor.RED
                         self._right_rotate(w)
-                        w = x.parent.right
+                        w = x._parent._right
 
-                    w.color = x.parent.color
-                    x.parent.color = NodeColor.BLACK
-                    w.right.color = NodeColor.BLACK
-                    self._left_rotate(x.parent)
+                    w._color = x._parent._color
+                    x._parent._color = NodeColor.BLACK
+                    w._right._color = NodeColor.BLACK
+                    self._left_rotate(x._parent)
                     x = root
             else:
-                w = x.parent.left
-                if w.color == NodeColor.RED:
-                    w.color = NodeColor.BLACK
-                    x.parent.color = NodeCollor.RED
-                    self._right_rotate(x.parent)
-                    w = x.parent.left
+                w = x._parent._left
+                if w._color == NodeColor.RED:
+                    w._color = NodeColor.BLACK
+                    x._parent._color = NodeCollor.RED
+                    self._right_rotate(x._parent)
+                    w = x._parent._left
                     
 
-                if w.right.color == NodeColor.BLACK and w.left.color == NodeColor.BLACK:
-                    w.color = NodeColor.RED
-                    x = x.parent
+                if w._right._color == NodeColor.BLACK and w._left._color == NodeColor.BLACK:
+                    w._color = NodeColor.RED
+                    x = x._parent
                 else:
-                    if w.left.color == NodeColor.BLACK:
-                        w.right.color = NodeColor.BLACK
-                        w.color = NodeColor.RED
+                    if w._left._color == NodeColor.BLACK:
+                        w._right._color = NodeColor.BLACK
+                        w._color = NodeColor.RED
                         self._left_rotate(w)
-                        w = x.parent.left
+                        w = x._parent._left
 
-                    w.color = x.parent.color
-                    x.parent.color = NodeColor.BLACK
-                    w.left.color = NodeColor.BLACK
-                    self._right_rotate(x.parent)
+                    w._color = x._parent.color
+                    x._parent._color = NodeColor.BLACK
+                    w._left._color = NodeColor.BLACK
+                    self._right_rotate(x._parent)
                     x = root
             
                     
-        x.color = NodeColor.BLACK
-        assert(self.nil.color == NodeColor.BLACK)
+        x._color = NodeColor.BLACK
+        assert(self._nil._color == NodeColor.BLACK)
 
 
-    def treeSuccessor(self, x):
-        nil = self.nil
+    def successor(self, x):
+        nil = self._nil
         
         root = self._root
         
-        y = x.right
+        y = x._right
         if y != nil:
-            while y.left != nil:
-                y = y.left
+            while y._left != nil:
+                y = y._left
 
             return y
         else:
-            y = x.parent
-            while x == y.right:
+            y = x._parent
+            while x == y._right:
                 x = y
-                y = y.parent
+                y = y._parent
             if y == root:
                 return nil
 
             return y
 
-    def treePredecessor(self, x):
+    def predecessor(self, x):
         
-        nil = self.nil
+        nil = self._nil
         root = self._root
         
-        y = x.left
+        y = x._left
         if y != nil:
-            while y.right != nil:
-                y = y.right
+            while y._right != nil:
+                y = y._right
 
-            return right
+            return _right
         else:
-            y = x.parent
-            while x == y.left:
+            y = x._parent
+            while x == y._left:
                 if y == root:
                     return nil
 
                 x = y
-                y = y.parent
+                y = y._parent
 
             return y
 
     def delete(self, z):
         
-        nil = self.nil
+        nil = self._nil
         root = self._root
         
-        if z.left == nil or z.right == nil:
+        if z._left == nil or z._right == nil:
             y = z
         else:
-            y = self.treeSuccessor(z)
+            y = self.successor(z)
             
-        if y.left == nil:
-            x = y.right
+        if y._left == nil:
+            x = y._right
         else:
-            x = y.left
+            x = y._left
 
-        x.parent = y.parent
-        if root == x.parent:
-            root.left = x
+        x._parent = y._parent
+        if root == x._parent:
+            root._left = x
         else:
-            if y == y.parent.left:
-                y.parent.left = x
+            if y == y._parent._left:
+                y._parent._left = x
             else:
-                y.parent.right = x
+                y._parent._right = x
 
         if y != z:
             
-            assert( y != self.nil )
+            assert( y != nil )
 
-            if y.color == NodeColor.BLACK:
-                self._deleteFixUp(x)
+            if y._color == NodeColor.BLACK:
+                self._delete_fix_up(x)
 
-            y.left = z.left
-            y.right = z.right
-            y.parent = z.parent
-            y.color = z.color
-            z.left.parent = z.right.parent = y
+            y._left = z._left
+            y._right = z._right
+            y._parent = z._parent
+            y._color = z.color
+            z._left._parent = z._right._parent = y
 
-            if z == z.parent.left:
-                z.parent.left = y
+            if z == z._parent._left:
+                z._parent._left = y
             else:
-                z.parent.right = y
+                z._parent._right = y
 
             z = None
         else:
-            if y.color == NodeColor.BLACK:
-                self._deleteFixUp(x)
+            if y._color == NodeColor.BLACK:
+                self._delete_fix_up(x)
 
             y = None
 
-        assert(self.nil.color == NodeColor.BLACK)
+        assert(self.nil._color == NodeColor.BLACK)
