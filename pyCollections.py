@@ -319,3 +319,157 @@ class RedBlackTree:
         self._root.left.color = NodeColor.BLACK
 
         return newnode
+
+
+    def _deleteFixUp(self, x):
+        root = self._root.left
+
+        while x.color == NodeColor.BLACK and root != x:
+            if x == x.parent.left:
+                w = x.parent.right
+                if w.color == NodeColor.RED:
+                    w.color = NodeColor.BLACK
+                    x.parent.color = NodeColor.RED
+                    self._left_rotate(x.parent)
+                    w = x.parent.right
+
+                if w.right.color == NodeColor.BLACK and w.left.color == NodeColor.BLACK:
+                    w.color = NodeColor.RED
+                    x = x.parent
+
+                else:
+                    
+                    if w.right.color == NodeColor.BLACK:
+                        w.left.color = NodeColor.BLACK
+                        w.color = NodeColor.RED
+                        self._right_rotate(w)
+                        w = x.parent.right
+
+                    w.color = x.parent.color
+                    x.parent.color = NodeColor.BLACK
+                    w.right.color = NodeColor.BLACK
+                    self._left_rotate(x.parent)
+                    x = root
+            else:
+                w = x.parent.left
+                if w.color == NodeColor.RED:
+                    w.color = NodeColor.BLACK
+                    x.parent.color = NodeCollor.RED
+                    self._right_rotate(x.parent)
+                    w = x.parent.left
+                    
+
+                if w.right.color == NodeColor.BLACK and w.left.color == NodeColor.BLACK:
+                    w.color = NodeColor.RED
+                    x = x.parent
+                else:
+                    if w.left.color == NodeColor.BLACK:
+                        w.right.color = NodeColor.BLACK
+                        w.color = NodeColor.RED
+                        self._left_rotate(w)
+                        w = x.parent.left
+
+                    w.color = x.parent.color
+                    x.parent.color = NodeColor.BLACK
+                    w.left.color = NodeColor.BLACK
+                    self._right_rotate(x.parent)
+                    x = root
+            
+                    
+        x.color = NodeColor.BLACK
+        assert(self.nil.color == NodeColor.BLACK)
+
+
+    def treeSuccessor(self, x):
+        nil = self.nil
+        
+        root = self._root
+        
+        y = x.right
+        if y != nil:
+            while y.left != nil:
+                y = y.left
+
+            return y
+        else:
+            y = x.parent
+            while x == y.right:
+                x = y
+                y = y.parent
+            if y == root:
+                return nil
+
+            return y
+
+    def treePredecessor(self, x):
+        
+        nil = self.nil
+        root = self._root
+        
+        y = x.left
+        if y != nil:
+            while y.right != nil:
+                y = y.right
+
+            return right
+        else:
+            y = x.parent
+            while x == y.left:
+                if y == root:
+                    return nil
+
+                x = y
+                y = y.parent
+
+            return y
+
+    def delete(self, z):
+        
+        nil = self.nil
+        root = self._root
+        
+        if z.left == nil or z.right == nil:
+            y = z
+        else:
+            y = self.treeSuccessor(z)
+            
+        if y.left == nil:
+            x = y.right
+        else:
+            x = y.left
+
+        x.parent = y.parent
+        if root == x.parent:
+            root.left = x
+        else:
+            if y == y.parent.left:
+                y.parent.left = x
+            else:
+                y.parent.right = x
+
+        if y != z:
+            
+            assert( y != self.nil )
+
+            if y.color == NodeColor.BLACK:
+                self._deleteFixUp(x)
+
+            y.left = z.left
+            y.right = z.right
+            y.parent = z.parent
+            y.color = z.color
+            z.left.parent = z.right.parent = y
+
+            if z == z.parent.left:
+                z.parent.left = y
+            else:
+                z.parent.right = y
+
+            z = None
+        else:
+            if y.color == NodeColor.BLACK:
+                self._deleteFixUp(x)
+
+            y = None
+
+        assert(self.nil.color == NodeColor.BLACK)
