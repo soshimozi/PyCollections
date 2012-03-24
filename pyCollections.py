@@ -18,6 +18,9 @@ Using
        >>> tree.insert('X')
        >>> tree.remove('X')  
 """
+
+import math
+
 class NodeColor:
     BLACK = 0
     RED = 1
@@ -260,7 +263,6 @@ class RedBlackTree:
 
                 if y._color == NodeColor.RED:
                     # case 1
-                    print("case #1")
                     x._parent._color = NodeColor.BLACK
                     y._color = NodeColor.BLACK
                     x._parent._parent._color = NodeColor.RED
@@ -271,12 +273,10 @@ class RedBlackTree:
                     # and x is _right, case #2
                     # move x up and roate it (rotates child into Parent spot)
                     if x == x._parent._right:
-                        print("case #2")
                         x = x._parent
                         self._left_rotate(x)
 
                     # case #3
-                    print("case #3")
                     x._parent._color = NodeColor.BLACK
                     x._parent._parent._color = NodeColor.RED
                     self._right_rotate(x._parent._parent)
@@ -288,8 +288,6 @@ class RedBlackTree:
                 y = x._parent._parent._left
                 if y._color == NodeColor.RED:
                     # case #4
-                    print("case #4")
-
                     x._parent._color = NodeColor.BLACK
                     y._color = NodeColor.BLACK
                     x._parent._parent._color = NodeColor.RED
@@ -297,20 +295,32 @@ class RedBlackTree:
 
                 else:
                     
-                    # x is left, case #2
+                    # x is left, case #5
                     # move x up and rotate it (rotates child into Parent's position)
                     if x == x._parent._left:
-                        print("case #5")
-
                         x = x._parent
                         self._right_rotate(x)
 
-                    print("case #6")
-
+                    # case #6
                     x._parent._color = NodeColor.BLACK
                     x._parent._parent._color = NodeColor.RED
                     self._left_rotate(x._parent._parent)
                     
+    def search(self, key):
+        x = self._root._left
+        
+        while not self._is_nil(x):
+            y = x
+            
+            if x._key == key:
+                return x
+            else:
+                if x._key > key:
+                    x = x._left
+                else:
+                    x = x._right
+        return None
+
     def insert(self, key, value):
         newnode = self._make_node(key, value)
 
@@ -460,7 +470,7 @@ class RedBlackTree:
             y._left = z._left
             y._right = z._right
             y._parent = z._parent
-            y._color = z.color
+            y._color = z._color
             z._left._parent = z._right._parent = y
 
             if z == z._parent._left:
@@ -475,4 +485,111 @@ class RedBlackTree:
 
             y = None
 
-        assert(self.nil._color == NodeColor.BLACK)
+        assert(self._nil._color == NodeColor.BLACK)
+
+    def iterator(self, node):
+        if node != self._nil:
+            for x in self.iterator(node._left):
+                yield x
+            yield node
+            for x in self.iterator(node._right):
+                yield x
+
+
+class BinaryHeap:
+    def __init__(self, scorefn):
+        self._scorefn = scorefn
+        self._content = []
+
+    def _sink_down(self, n):
+        length = len(self._content)
+        element = self._content[n]
+        elemScore = self._scorefn(element)
+
+        while True:
+            child2N = (n + 1) * 2
+            child1N = child2N - 1
+
+            swap = None
+
+            if child1N < length:
+                child1 = self._content[child1N]
+                child1Score = self._scorefn(child1)
+
+                if child1Score < elemScore:
+                    swap = child1N
+
+            if child2N < length:
+                child2 = self._content[child2N]
+                child2Score = self._scorefn(child2)
+
+                compare = elemScore
+                if swap != None:
+                    compare = child1Score
+                    
+                if child2Score < compare:
+                    swap = child2N
+
+            
+            if swap != None:
+                self._content[n] = self._content[swap]
+                self._content[swap] = element
+                n = swap
+            else:
+                break
+                
+        return
+
+    def _bubble_up(self, n):
+        # get element that has to be moved
+        element = self._content[n]
+
+        while n > 0:
+            parentN = int(math.floor((n + 1) / 2)) - 1
+            parent = self._content[parentN]
+
+            # swap the elements if the parent is greater.
+            if self._scorefn(element) < self._scorefn(parent):
+                self._content[parentN] = element
+                self._content[n] = parent
+
+                # update 'n' to continue at the new position
+                n = parentN
+            else:
+                break
+        return
+
+    def size(self):
+        return len(self._content)
+
+    def push(self, element):
+        self._content.append(element)
+        
+        self._bubble_up(len(self._content) - 1)
+
+    def pop(self):
+        result = self._content[0]
+        end = self._content.pop()
+
+        if len(self._content) > 0:
+            self._content[0] = end
+            self._sink_down(0)
+
+        return result
+
+    def remove(self, node):
+        length = len(self._content)
+
+        end = self._content.pop()
+        for n in range(0, length):
+            if self._content[n] == node:
+                self._content[n] = end
+                if self._scorefn(end) < self._scorefn(node):
+                    self._bubble_up(n)
+                else:
+                    self._sink_down(n)
+
+                return
+
+            raise Exception("Node not found.")
+
