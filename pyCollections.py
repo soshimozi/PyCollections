@@ -559,6 +559,9 @@ class BinaryHeap:
                 break
         return
 
+    def peek(self):
+        return self._content[0]
+
     def size(self):
         return len(self._content)
 
